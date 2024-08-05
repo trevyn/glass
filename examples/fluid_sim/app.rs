@@ -1,3 +1,6 @@
+use egui::{FullOutput, ViewportId};
+use egui_demo_lib::DemoWindows;
+use egui_wgpu::ScreenDescriptor;
 use glam::Vec2;
 use glass::{
     egui::Color32,
@@ -11,7 +14,7 @@ use glass::{
     },
     GlassApp, GlassContext, RenderData,
 };
-use wgpu::{CommandBuffer, StoreOp};
+use wgpu::{CommandBuffer, CommandEncoder, StoreOp, TextureView};
 use winit::{event::MouseButton, keyboard::KeyCode};
 use winit_input_helper::WinitInputHelper;
 
@@ -33,10 +36,11 @@ pub struct FluidSimApp {
     input: WinitInputHelper,
     fluid_scene: FluidScene,
     timer: Timer,
+    gui: GuiState,
 }
 
 impl FluidSimApp {
-    pub fn new() -> FluidSimApp {
+    pub fn new(event_loop: &EventLoopWindowTarget<()>, context: &mut GlassContext) -> FluidSimApp {
         FluidSimApp {
             circle_pipeline: None,
             rectangle_pipeline: None,
@@ -47,6 +51,7 @@ impl FluidSimApp {
             input: WinitInputHelper::default(),
             fluid_scene: FluidScene::new(WIDTH as f32, HEIGHT as f32),
             timer: Timer::new(),
+            gui: GuiState::new(event_loop, context),
         }
     }
 }
@@ -150,6 +155,7 @@ impl GlassApp for FluidSimApp {
         context: &GlassContext,
         render_data: RenderData,
     ) -> Option<Vec<CommandBuffer>> {
+        return Some(render(self, context, render_data));
         // Render on render target
         // Paste render target over swapchain image
         let FluidSimApp {
@@ -353,4 +359,130 @@ pub fn cursor_to_world(cursor_pos: Vec2, screen_size: &[f32; 2], camera: &Camera
         // Invert y here, because we want world positions to grow up, and right
         * Vec2::new(1.0, -1.0)
         + Vec2::new(camera.pos.x, camera.pos.y)
+}
+
+struct GuiState {
+    egui_ctx: egui::Context,
+    egui_winit: egui_winit::State,
+    renderer: egui_wgpu::Renderer,
+    repaint: bool,
+    ui_app: DemoWindows,
+}
+
+impl GuiState {
+    fn new(event_loop: &EventLoopWindowTarget<()>, context: &mut GlassContext) -> GuiState {
+        let ctx = egui::Context::default();
+        let pixels_per_point = context.primary_render_window().window().scale_factor() as f32;
+        let egui_winit = egui_winit::State::new(
+            ctx.clone(),
+            ViewportId::ROOT,
+            event_loop,
+            Some(pixels_per_point),
+            Some(context.device().limits().max_texture_dimension_2d as usize),
+        );
+        let renderer = egui_wgpu::Renderer::new(
+            context.device(),
+            GlassWindow::default_surface_format(),
+            None,
+            1,
+            false,
+        );
+        GuiState {
+            egui_ctx: ctx,
+            egui_winit,
+            renderer,
+            repaint: false,
+            ui_app: egui_demo_lib::DemoWindows::default(),
+        }
+    }
+}
+
+fn render(
+    app: &mut FluidSimApp,
+    context: &GlassContext,
+    render_data: RenderData,
+) -> Vec<CommandBuffer> {
+    let RenderData { encoder, frame, .. } = render_data;
+    let view = frame
+        .texture
+        .create_view(&wgpu::TextureViewDescriptor::default());
+
+    render_egui(app, context, encoder, &view)
+}
+
+fn render_egui(
+    app: &mut FluidSimApp,
+    context: &GlassContext,
+    encoder: &mut CommandEncoder,
+    view: &TextureView,
+) -> Vec<CommandBuffer> {
+    let window = context.primary_render_window();
+    let GuiState {
+        egui_ctx,
+        renderer,
+        egui_winit,
+        ui_app,
+        ..
+    } = &mut app.gui;
+    let raw_input = egui_winit.take_egui_input(window.window());
+    let FullOutput {
+        shapes,
+        textures_delta,
+        pixels_per_point,
+        ..
+    } = egui_ctx.run(raw_input, |egui_ctx| {
+        // Ui content
+        ui_app.ui(egui_ctx);
+    });
+    // creates triangles to paint
+    let clipped_primitives = egui_ctx.tessellate(shapes, pixels_per_point);
+
+    let size = window.surface_size();
+    let screen_descriptor = ScreenDescriptor {
+        size_in_pixels: size,
+        pixels_per_point,
+    };
+
+    // Upload all resources for the GPU.
+    let user_cmd_bufs = {
+        for (id, image_delta) in &textures_delta.set {
+            renderer.update_texture(context.device(), context.queue(), *id, image_delta);
+        }
+
+        // Update buffers
+        renderer.update_buffers(
+            context.device(),
+            context.queue(),
+            encoder,
+            &clipped_primitives,
+            &screen_descriptor,
+        )
+    };
+
+    // Render
+    {
+        let mut render_pass = encoder.begin_render_pass(&wgpu::RenderPassDescriptor {
+            label: None,
+            color_attachments: &[Some(wgpu::RenderPassColorAttachment {
+                view: &view,
+                resolve_target: None,
+                ops: wgpu::Operations {
+                    load: wgpu::LoadOp::Clear(wgpu::Color::GREEN),
+                    store: StoreOp::Store,
+                },
+            })],
+            depth_stencil_attachment: None,
+            timestamp_writes: None,
+            occlusion_query_set: None,
+        });
+        // Here you would render your scene
+        // Render Egui
+        renderer.render(&mut render_pass, &*clipped_primitives, &screen_descriptor);
+    }
+
+    for id in &textures_delta.free {
+        renderer.free_texture(id);
+    }
+
+    user_cmd_bufs
 }

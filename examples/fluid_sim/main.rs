@@ -42,5 +42,7 @@ fn config() -> GlassConfig {
 }
 
 fn main() -> Result<(), GlassError> {
-    Glass::new(FluidSimApp::new(), config()).run()
+    Glass::new_and_run(config(), |event_loop, context| {
+        Box::new(FluidSimApp::new(event_loop, context))
+    })
 }
