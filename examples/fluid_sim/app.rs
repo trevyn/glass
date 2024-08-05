@@ -122,7 +122,7 @@ impl GlassApp for FluidSimApp {
         }
         if let Some((x, y)) = self.input.cursor() {
             let screen_size = context.primary_render_window().surface_size();
-            let scale_factor = context.primary_render_window().window().scale_factor() as f32;
+            let scale_factor = 1.0; //context.primary_render_window().window().scale_factor() as f32;
             let pos = cursor_to_world(
                 Vec2::new(x, y) / scale_factor,
                 &[
