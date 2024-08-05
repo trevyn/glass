@@ -54,22 +54,30 @@ impl FluidSimApp {
 impl GlassApp for FluidSimApp {
     fn start(&mut self, _event_loop: &EventLoop<()>, context: &mut GlassContext) {
         self.render_target = Some(create_render_target(context));
-        self.circle_pipeline = Some(CirclePipeline::new(context.device(), ColorTargetState {
-            format: TextureFormat::Rgba16Float,
-            blend: Some(BlendState::ALPHA_BLENDING),
-            write_mask: ColorWrites::ALL,
-        }));
-        self.rectangle_pipeline =
-            Some(RectanglePipeline::new(context.device(), ColorTargetState {
+        self.circle_pipeline = Some(CirclePipeline::new(
+            context.device(),
+            ColorTargetState {
                 format: TextureFormat::Rgba16Float,
                 blend: Some(BlendState::ALPHA_BLENDING),
                 write_mask: ColorWrites::ALL,
-            }));
-        self.quad_pipeline = Some(QuadPipeline::new(context.device(), ColorTargetState {
-            format: GlassWindow::default_surface_format(),
-            blend: Some(BlendState::REPLACE),
-            write_mask: ColorWrites::ALL,
-        }));
+            },
+        ));
+        self.rectangle_pipeline = Some(RectanglePipeline::new(
+            context.device(),
+            ColorTargetState {
+                format: TextureFormat::Rgba16Float,
+                blend: Some(BlendState::ALPHA_BLENDING),
+                write_mask: ColorWrites::ALL,
+            },
+        ));
+        self.quad_pipeline = Some(QuadPipeline::new(
+            context.device(),
+            ColorTargetState {
+                format: GlassWindow::default_surface_format(),
+                blend: Some(BlendState::REPLACE),
+                write_mask: ColorWrites::ALL,
+            },
+        ));
         self.post_processing = Some(PostProcessing::new(context));
     }
 
@@ -167,11 +175,7 @@ impl GlassApp for FluidSimApp {
             window_size[0] as f32 * scale_factor,
             window_size[1] as f32 * scale_factor,
         ];
-        let RenderData {
-            encoder,
-            frame,
-            ..
-        } = render_data;
+        let RenderData { encoder, frame, .. } = render_data;
         // We don't need to submit our commands, because they get submitted after `render`.
 
         let rt_view = render_target
