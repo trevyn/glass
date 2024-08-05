@@ -11,7 +11,7 @@ egui_gui = ["egui-wgpu", "egui-winit", "egui"]
 egui_extra = ["egui_gui", "egui_extras", "egui_plot"]
 egui_demo = ["egui_gui", "egui_demo_lib", "egui_demo_lib/syntect"]
 egui_persistence = ["egui_gui", "egui_demo", "egui/persistence", "egui_demo_lib/serde"]
-trace = ["wgpu/trace"]
+# trace = ["wgpu/trace"]
 wgpu_serde = ["wgpu/serde"]
 
 [dependencies]
@@ -19,9 +19,9 @@ indexmap = "2.2"
 pollster = "0.3"
 image = "0.25"
 bytemuck = { version = "1.16", features = ["derive"] }
-wgpu = { version = "0.20", default-features = true, features = ["naga-ir"] }
+wgpu = { version = "22.1.0", default-features = true, features = ["naga-ir"] }
 winit = { version = "0.29", features = [] }
-glam = "0.27"
+glam = "0.28"
 path-clean = "1.0.1"
 notify = "6.1"
 flume = "0.11"
@@ -35,10 +35,18 @@ egui_extras = { version = "0.28", optional = true }
 egui_demo_lib = { version = "0.28", optional = true }
 egui_plot = { version = "0.28", optional = true }
 
+[patch.crates-io]
+egui = {git = "https://github.com/trevyn/egui", branch = "multiclick-text-select"}
+egui-wgpu = {git = "https://github.com/trevyn/egui", branch = "multiclick-text-select"}
+egui-winit = {git = "https://github.com/trevyn/egui", branch = "multiclick-text-select"}
+egui_extras = {git = "https://github.com/trevyn/egui", branch = "multiclick-text-select"}
+egui_demo_lib = {git = "https://github.com/trevyn/egui", branch = "multiclick-text-select"}
+# egui_plot = {git = "https://github.com/trevyn/egui", branch = "multiclick-text-select"}
+
 [dev-dependencies]
 egui_demo_lib = { version = "0.28" }
 winit_input_helper = "0.16"
-rapier2d = { version = "0.21.0", features = ["default", "debug-render"] }
+rapier2d = { version = "0.22.0", features = ["default", "debug-render"] }
 rand = "0.8"
 
 [lints.clippy]

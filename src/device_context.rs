@@ -129,6 +129,7 @@ impl DeviceContext {
                 label: None,
                 required_features: config.features,
                 required_limits: config.limits.clone(),
+                memory_hints: wgpu::MemoryHints::Performance,
             },
             if cfg!(feature = "trace") { path } else { None },
         )) {

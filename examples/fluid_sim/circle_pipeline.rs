@@ -67,6 +67,7 @@ impl CirclePipeline {
             }],
         });
         let pipeline = device.create_render_pipeline(&wgpu::RenderPipelineDescriptor {
+            cache: None,
             label: Some("Circle Render Pipeline"),
             layout: Some(&layout),
             vertex: wgpu::VertexState {

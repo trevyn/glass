@@ -65,6 +65,7 @@ impl TonemappingPipeline {
             }],
         });
         let tonemapping_pipeline = device.create_render_pipeline(&wgpu::RenderPipelineDescriptor {
+            cache: None,
             label: Some("Tonemapping Pipeline"),
             layout: Some(&layout),
             vertex: wgpu::VertexState {

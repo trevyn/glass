@@ -83,6 +83,7 @@ impl PastePipeline {
             }],
         });
         let paste_pipeline = device.create_render_pipeline(&wgpu::RenderPipelineDescriptor {
+            cache: None,
             label: Some("Paste Pipeline"),
             layout: Some(&layout),
             vertex: wgpu::VertexState {

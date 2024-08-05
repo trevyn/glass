@@ -63,6 +63,7 @@ impl GuiState {
             GlassWindow::default_surface_format(),
             None,
             1,
+            false,
         );
         GuiState {
             egui_ctx: ctx,
