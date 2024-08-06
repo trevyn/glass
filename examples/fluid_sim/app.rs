@@ -291,6 +291,10 @@ fn render_egui(
                 &mut app.fluid_sim.fluid_scene.dt,
                 0.00..=0.03,
             ));
+            ui.add(egui::Slider::new(
+                &mut app.fluid_sim.fluid_scene.obstacle_radius,
+                0.00..=1.,
+            ));
         });
         // Ui content
         // ui_app.ui(egui_ctx);
