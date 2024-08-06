@@ -2,14 +2,14 @@ use glam::{IVec2, Vec2, Vec3};
 
 // Fluid sim based on https://github.com/matthias-research/pages/blob/master/tenMinutePhysics/18-flip.html
 
-#[derive(Debug)]
+#[derive(Debug)] // , EguiAdjust
 pub struct FluidScene {
     pub width: f32,
     pub height: f32,
     tank_width: f32,
     tank_height: f32,
     gravity: Vec2,
-    dt: f32,
+    pub dt: f32,
     flip_ratio: f32,
     num_pressure_iters: usize,
     num_particle_iters: usize,

@@ -283,8 +283,17 @@ fn render_egui(
         pixels_per_point,
         ..
     } = egui_ctx.run(raw_input, |egui_ctx| {
+        // egui_adjust!(egui_ctx, app.fluid_scene);
+        egui::SidePanel::left("left").show(egui_ctx, |ui| {
+            ui.label("Hello World!");
+            ui.label(format!("fps: {:.2}", app.fluid_sim.timer.avg_fps()));
+            ui.add(egui::Slider::new(
+                &mut app.fluid_sim.fluid_scene.dt,
+                0.00..=0.03,
+            ));
+        });
         // Ui content
-        ui_app.ui(egui_ctx);
+        // ui_app.ui(egui_ctx);
     });
     // creates triangles to paint
     let clipped_primitives = egui_ctx.tessellate(shapes, pixels_per_point);
