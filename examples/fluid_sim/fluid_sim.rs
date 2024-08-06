@@ -80,7 +80,7 @@ impl FluidScene {
             num_particle_iters: 2,
             over_relaxation: 1.9,
             compensate_drift: true,
-            paused: true,
+            paused: false,
             obstacle_pos: Vec2::new(-obstacle_radius, -obstacle_radius),
             obstacle_vel: Vec2::ZERO,
             show_particles: true,

@@ -1,6 +1,7 @@
 use egui::{FullOutput, ViewportId};
 use egui_demo_lib::DemoWindows;
 use egui_wgpu::ScreenDescriptor;
+use egui_winit::EventResponse;
 use glam::Vec2;
 use glass::{
     egui::Color32,
@@ -94,11 +95,13 @@ impl GlassApp for FluidSimApp {
 
     fn input(
         &mut self,
-        _context: &mut GlassContext,
+        context: &mut GlassContext,
         _event_loop: &EventLoopWindowTarget<()>,
         event: &Event<()>,
     ) {
-        self.fluid_sim.input.update(event);
+        if (!update_egui_with_winit_event(self, context, event)) {
+            self.fluid_sim.input.update(event);
+        }
     }
 
     fn update(&mut self, context: &mut GlassContext) {
@@ -505,4 +508,29 @@ fn render_scene<'a>(
     //         1.0,
     //     );
     // }
+}
+
+fn update_egui_with_winit_event(
+    app: &mut FluidSimApp,
+    context: &mut GlassContext,
+    event: &Event<()>,
+) -> bool {
+    match event {
+        Event::WindowEvent {
+            window_id, event, ..
+        } => {
+            let gui = &mut app.gui;
+            if let Some(window) = context.render_window(*window_id) {
+                let EventResponse { consumed, repaint } =
+                    gui.egui_winit.on_window_event(window.window(), event);
+                gui.repaint = repaint;
+                // Skip input if event was consumed by egui
+                if consumed {
+                    return true;
+                }
+            }
+        }
+        _ => {}
+    }
+    false
 }
