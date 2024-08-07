@@ -88,9 +88,7 @@ impl BloomPipeline {
                 BindGroupLayoutEntry {
                     binding: 0,
                     ty: BindingType::Texture {
-                        sample_type: TextureSampleType::Float {
-                            filterable: true,
-                        },
+                        sample_type: TextureSampleType::Float { filterable: true },
                         view_dimension: TextureViewDimension::D2,
                         multisampled: false,
                     },
@@ -120,6 +118,7 @@ impl BloomPipeline {
         });
         let downsample_first_pipeline =
             device.create_render_pipeline(&wgpu::RenderPipelineDescriptor {
+                cache: None,
                 label: Some("Bloom Downsample First Pipeline"),
                 layout: Some(&layout),
                 vertex: wgpu::VertexState {
@@ -144,6 +143,7 @@ impl BloomPipeline {
                 multiview: None,
             });
         let downsample_pipeline = device.create_render_pipeline(&wgpu::RenderPipelineDescriptor {
+            cache: None,
             label: Some("Bloom Downsample Pipeline"),
             layout: Some(&layout),
             vertex: wgpu::VertexState {
@@ -182,6 +182,7 @@ impl BloomPipeline {
         };
 
         let upsample_pipeline = device.create_render_pipeline(&wgpu::RenderPipelineDescriptor {
+            cache: None,
             label: Some("Bloom Upsample Pipeline"),
             layout: Some(&layout),
             vertex: wgpu::VertexState {
@@ -214,6 +215,7 @@ impl BloomPipeline {
         });
 
         let final_pipeline = device.create_render_pipeline(&wgpu::RenderPipelineDescriptor {
+            cache: None,
             label: Some("Bloom Final Pipeline"),
             layout: Some(&layout),
             vertex: wgpu::VertexState {

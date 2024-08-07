@@ -21,10 +21,7 @@ impl LinePipeline {
             usage: wgpu::BufferUsages::VERTEX | wgpu::BufferUsages::COPY_DST,
         });
         let pipeline = Self::new_render_pipeline(device, color_target_state);
-        Self {
-            pipeline,
-            vertices,
-        }
+        Self { pipeline, vertices }
     }
 
     pub fn new_render_pipeline(
@@ -44,6 +41,7 @@ impl LinePipeline {
             }],
         });
         let pipeline = device.create_render_pipeline(&wgpu::RenderPipelineDescriptor {
+            cache: None,
             label: Some("Line Render Pipeline"),
             layout: Some(&layout),
             vertex: wgpu::VertexState {
@@ -146,10 +144,6 @@ pub struct Line {
 
 impl Line {
     pub fn new(start: Vec3, end: Vec3, color: [f32; 4]) -> Line {
-        Line {
-            start,
-            end,
-            color,
-        }
+        Line { start, end, color }
     }
 }

@@ -47,9 +47,7 @@ impl QuadPipeline {
                         ty: wgpu::BindingType::Texture {
                             multisampled: false,
                             view_dimension: wgpu::TextureViewDimension::D2,
-                            sample_type: wgpu::TextureSampleType::Float {
-                                filterable: true,
-                            },
+                            sample_type: wgpu::TextureSampleType::Float { filterable: true },
                         },
                         count: None,
                     },
@@ -75,6 +73,7 @@ impl QuadPipeline {
             }],
         });
         let pipeline = device.create_render_pipeline(&wgpu::RenderPipelineDescriptor {
+            cache: None,
             label: Some("Quad Render Pipeline"),
             layout: Some(&layout),
             vertex: wgpu::VertexState {

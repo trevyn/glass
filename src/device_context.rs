@@ -110,6 +110,7 @@ impl DeviceContext {
         // Create the logical device and command queue
         let (device, queue) = match wait_async(adapter.request_device(
             &DeviceDescriptor {
+                memory_hints: wgpu::MemoryHints::Performance,
                 label: None,
                 required_features: config.features,
                 required_limits: config.limits.clone(),

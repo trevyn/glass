@@ -35,9 +35,7 @@ impl TonemappingPipeline {
                 BindGroupLayoutEntry {
                     binding: 0,
                     ty: BindingType::Texture {
-                        sample_type: TextureSampleType::Float {
-                            filterable: true,
-                        },
+                        sample_type: TextureSampleType::Float { filterable: true },
                         view_dimension: TextureViewDimension::D2,
                         multisampled: false,
                     },
@@ -65,6 +63,7 @@ impl TonemappingPipeline {
             }],
         });
         let tonemapping_pipeline = device.create_render_pipeline(&wgpu::RenderPipelineDescriptor {
+            cache: None,
             label: Some("Tonemapping Pipeline"),
             layout: Some(&layout),
             vertex: wgpu::VertexState {
