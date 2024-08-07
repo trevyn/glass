@@ -19,7 +19,7 @@ indexmap = "2.2"
 pollster = "0.3"
 image = "0.25"
 bytemuck = { version = "1.16", features = ["derive"] }
-wgpu = { version = "22.1.0", default_features = true, features = ["naga-ir"] }
+wgpu = { version = "22.1.0", default_features = false, features = ["naga-ir"] }
 winit = { version = "0.30" }
 glam = "0.28"
 path-clean = "1.0.1"
