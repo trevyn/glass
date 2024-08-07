@@ -91,6 +91,7 @@ impl ApplicationHandler for Glass {
                     context.device_context.device(),
                     window.window().inner_size(),
                 );
+                window.window().request_redraw();
             }
             app.start(event_loop, context);
             runner_state.is_init = true;
@@ -112,6 +113,10 @@ impl ApplicationHandler for Glass {
         app.window_input(context, event_loop, window_id, &event);
         if let Some(window) = context.windows.get_mut(&window_id) {
             match event {
+                WindowEvent::RedrawRequested => {
+                    window.window().request_redraw();
+                    run_update(event_loop, app, context, runner_state);
+                }
                 WindowEvent::Resized(physical_size) => {
                     // On windows, minimized app can have 0,0 size
                     if physical_size.width > 0 && physical_size.height > 0 {
@@ -121,9 +126,7 @@ impl ApplicationHandler for Glass {
                         );
                     }
                 }
-                WindowEvent::ScaleFactorChanged {
-                    ..
-                } => {
+                WindowEvent::ScaleFactorChanged { .. } => {
                     let size = window.window().inner_size();
                     window.configure_surface_with_size(context.device_context.device(), size);
                 }
@@ -160,30 +163,23 @@ impl ApplicationHandler for Glass {
         device_id: DeviceId,
         event: DeviceEvent,
     ) {
-        let Glass {
-            app,
-            context,
-            ..
-        } = self;
+        let Glass { app, context, .. } = self;
         app.device_input(context, event_loop, device_id, &event);
     }
 
-    fn about_to_wait(&mut self, event_loop: &ActiveEventLoop) {
-        let Glass {
-            app,
-            context,
-            runner_state,
-            ..
-        } = self;
-        run_update(event_loop, app, context, runner_state);
-    }
+    // fn about_to_wait(&mut self, event_loop: &ActiveEventLoop) {
+    //     // "This is not an ideal event to drive application rendering from and instead applications should render in response to WindowEvent::RedrawRequested events."
+    //     let Glass {
+    //         app,
+    //         context,
+    //         runner_state,
+    //         ..
+    //     } = self;
+    //     run_update(event_loop, app, context, runner_state);
+    // }
 
     fn exiting(&mut self, _event_loop: &ActiveEventLoop) {
-        let Glass {
-            app,
-            context,
-            ..
-        } = self;
+        let Glass { app, context, .. } = self;
         app.end(context);
     }
 }
@@ -225,11 +221,14 @@ fn render(app: &mut Box<dyn GlassApp>, context: &mut GlassContext) {
 
                 // Run render
                 let mut buffers = app
-                    .render(context, RenderData {
-                        encoder: &mut encoder,
-                        window,
-                        frame: &frame,
-                    })
+                    .render(
+                        context,
+                        RenderData {
+                            encoder: &mut encoder,
+                            window,
+                            frame: &frame,
+                        },
+                    )
                     .unwrap_or_default();
                 buffers.push(encoder.finish());
                 context.device_context.queue().submit(buffers);
