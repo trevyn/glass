@@ -225,13 +225,20 @@ fn render(app: &mut Box<dyn GlassApp>, context: &mut GlassContext) {
     puffin::profile_function!();
 
     for (_, window) in context.windows.iter() {
-        match window.surface().get_current_texture() {
+        let texture = {
+            puffin::profile_scope!("get_texture");
+            window.surface().get_current_texture()
+        };
+        match texture {
             Ok(frame) => {
-                let mut encoder = context.device_context.device().create_command_encoder(
-                    &wgpu::CommandEncoderDescriptor {
-                        label: Some("Render Commands"),
-                    },
-                );
+                let mut encoder = {
+                    puffin::profile_scope!("create_encoder");
+                    context.device_context.device().create_command_encoder(
+                        &wgpu::CommandEncoderDescriptor {
+                            label: Some("Render Commands"),
+                        },
+                    )
+                };
 
                 // Run render
                 let mut buffers = app
@@ -244,10 +251,14 @@ fn render(app: &mut Box<dyn GlassApp>, context: &mut GlassContext) {
                         },
                     )
                     .unwrap_or_default();
-                buffers.push(encoder.finish());
-                context.device_context.queue().submit(buffers);
+                {
+                    puffin::profile_scope!("finish_and_present");
 
-                frame.present();
+                    buffers.push(encoder.finish());
+                    context.device_context.queue().submit(buffers);
+
+                    frame.present();
+                }
             }
             Err(error) => {
                 if error == wgpu::SurfaceError::OutOfMemory {
