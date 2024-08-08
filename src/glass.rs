@@ -39,6 +39,8 @@ impl Glass {
         config: GlassConfig,
         app_create_fn: impl FnOnce(&mut GlassContext) -> Box<dyn GlassApp>,
     ) -> Result<(), GlassError> {
+        puffin::profile_function!();
+
         let mut context = GlassContext::new(config.clone())?;
         let app = app_create_fn(&mut context);
         let mut glass = Glass {
@@ -59,6 +61,8 @@ impl Glass {
 
 impl ApplicationHandler for Glass {
     fn new_events(&mut self, event_loop: &ActiveEventLoop, _cause: StartCause) {
+        puffin::profile_function!();
+
         // Ensure we're poll
         if event_loop.control_flow() != ControlFlow::Poll {
             event_loop.set_control_flow(ControlFlow::Poll);
@@ -66,6 +70,8 @@ impl ApplicationHandler for Glass {
     }
 
     fn resumed(&mut self, event_loop: &ActiveEventLoop) {
+        puffin::profile_function!();
+
         let Glass {
             app,
             config,
@@ -104,6 +110,8 @@ impl ApplicationHandler for Glass {
         window_id: WindowId,
         event: WindowEvent,
     ) {
+        puffin::profile_function!();
+
         let Glass {
             app,
             context,
@@ -163,6 +171,8 @@ impl ApplicationHandler for Glass {
         device_id: DeviceId,
         event: DeviceEvent,
     ) {
+        puffin::profile_function!();
+
         let Glass { app, context, .. } = self;
         app.device_input(context, event_loop, device_id, &event);
     }
@@ -190,6 +200,8 @@ fn run_update(
     context: &mut GlassContext,
     runner_state: &mut RunnerState,
 ) {
+    puffin::profile_function!();
+
     app.update(context);
 
     if runner_state.request_window_close || context.exit {
@@ -210,6 +222,8 @@ fn run_update(
 }
 
 fn render(app: &mut Box<dyn GlassApp>, context: &mut GlassContext) {
+    puffin::profile_function!();
+
     for (_, window) in context.windows.iter() {
         match window.surface().get_current_texture() {
             Ok(frame) => {
